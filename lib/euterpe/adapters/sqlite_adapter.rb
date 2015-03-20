@@ -11,8 +11,14 @@ module Euterpe
 
       columns = ["id INTEGER PRIMARY KEY"]
       fields.each do |field|
-        if field['type'] == 'string'
-          columns << "#{field['name']} TEXT"
+        db_type =
+          case field['type']
+          when 'string' then 'TEXT'
+          when 'integer' then 'INTEGER'
+          end
+
+        if db_type
+          columns << "#{field['name']} #{db_type}"
         end
       end
 

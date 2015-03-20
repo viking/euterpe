@@ -30,6 +30,14 @@ RSpec.describe Euterpe::SqliteAdapter do
       expect(result).to eq(true)
     end
 
+    it "should create a database table with an integer field" do
+      field = { 'name' => 'foo', 'type' => 'integer' }
+      expect(database).to receive(:execute).with("SELECT name FROM sqlite_master WHERE type = 'table'") { [] }
+      expect(database).to receive(:execute).with("CREATE TABLE stuff (id INTEGER PRIMARY KEY, foo INTEGER)")
+      result = adapter.create_collection('stuff', [field])
+      expect(result).to eq(true)
+    end
+
     it "should not create a database table that already exists" do
       field = { 'name' => 'foo', 'type' => 'string' }
       expect(database).to receive(:execute).with("SELECT name FROM sqlite_master WHERE type = 'table'") { [["stuff"]] }
