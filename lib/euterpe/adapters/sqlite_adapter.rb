@@ -27,12 +27,20 @@ module Euterpe
     end
 
     def find(name, criteria = {})
-      if criteria.empty?
-        @database.execute("SELECT * FROM #{name}")
-      else
-        columns = criteria.keys
-        parts = columns.collect { |k| "#{k} = ?" }
-        @database.execute("SELECT * FROM #{name} WHERE #{parts.join(" AND ")}", criteria.values_at(*columns))
+      cols = columns(name)
+      select = cols.join(", ")
+
+      result =
+        if criteria.empty?
+          @database.execute("SELECT #{select} FROM #{name}")
+        else
+          lhs = criteria.keys
+          parts = lhs.collect { |k| "#{k} = ?" }
+          @database.execute("SELECT #{select} FROM #{name} WHERE #{parts.join(" AND ")}", criteria.values_at(*lhs))
+        end
+
+      result.collect do |record|
+        cols.zip(record).to_h
       end
     end
 
@@ -40,6 +48,10 @@ module Euterpe
 
     def tables
       @database.execute("SELECT name FROM sqlite_master WHERE type = 'table'").flatten
+    end
+
+    def columns(name)
+      @database.execute("PRAGMA table_info(#{name})").collect { |row| row[1] }
     end
   end
 end

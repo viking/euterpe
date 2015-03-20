@@ -50,15 +50,17 @@ RSpec.describe Euterpe::SqliteAdapter do
 
   describe "#find" do
     it "should find records with no criteria" do
-      expect(database).to receive(:execute).with("SELECT * FROM stuff") { [["foo"], ["bar"]] }
+      expect(database).to receive(:execute).with("PRAGMA table_info(stuff)") { [[0, "id", "INTEGER", 0, nil, 1], [1, "bar", "TEXT", 0, nil, 0]] }
+      expect(database).to receive(:execute).with("SELECT id, bar FROM stuff") { [[1, "foo"], [2, "bar"]] }
       result = adapter.find('stuff')
-      expect(result).to eq([["foo"], ["bar"]])
+      expect(result).to eq([{'id' => 1, 'bar' => 'foo'}, {'id' => 2, 'bar' => 'bar'}])
     end
 
     it "should find records with criteria" do
-      expect(database).to receive(:execute).with("SELECT * FROM stuff WHERE foo = ? AND bar = ?", ["bar", "baz"]) { [["foo"], ["bar"]] }
+      expect(database).to receive(:execute).with("PRAGMA table_info(stuff)") { [[0, "id", "INTEGER", 0, nil, 1], [1, "bar", "TEXT", 0, nil, 0]] }
+      expect(database).to receive(:execute).with("SELECT id, bar FROM stuff WHERE foo = ? AND bar = ?", ["bar", "baz"]) { [[1, "foo"], [2, "bar"]] }
       result = adapter.find('stuff', { 'foo' => 'bar', 'bar' => 'baz' })
-      expect(result).to eq([["foo"], ["bar"]])
+      expect(result).to eq([{'id' => 1, 'bar' => 'foo'}, {'id' => 2, 'bar' => 'bar'}])
     end
   end
 end
